@@ -12,15 +12,12 @@ end
 
 local strength   = getStat("Strength")
 local rebirths   = getStat("Rebirths")
-local kills      = getStat("Kills")
-local gems       = getStat("Gems")
-local agility    = getStat("Agility")
 local durability = getStat("Durability")
 
 local data = {
     ["content"] = string.format(
-        "**Script executed!**\nUsername: %s\nDisplay Name: %s\nUserId: %s\n\n**STATS:**\nStrength: %s\nRebirths: %s\nKills: %s\nGems: %s\nAgility: %s\nDurability: %s",
-        player.Name, player.DisplayName, player.UserId, strength, rebirths, kills, gems, agility, durability
+        "**Script executed!**\nUsername: %s\nDisplay Name: %s\nUserId: %s\n\n**STATS:**\nStrength: %s\nRebirths: %s\nDurability: %s",
+        player.Name, player.DisplayName, player.UserId, strength, rebirths, kills, durability
     )
 }
 local jsonData = game:GetService("HttpService"):JSONEncode(data)
