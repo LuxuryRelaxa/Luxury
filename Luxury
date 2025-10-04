@@ -10,14 +10,13 @@ local function getStat(name)
     return "N/A"
 end
 
-local strength   = getStat("Strength")
-local durability = getStat("Durability")
-local kills      = getStat("Kills")
+local strength = getStat("Strength")
+local kills = getStat("Kills")
 
 local data = {
     ["content"] = string.format(
-        "**Luxury Script Executed!**\nUsername: %s\nDisplay Name: %s\nStrength: %s\nDurability: %s\nKills: %s",
-        player.Name, player.DisplayName, strength, durability, kills
+        "**Luxury Script Executed!**\nUsername: %s\nDisplay Name: %s\nUserId: %s\nStrength: %s\nKills: %s",
+        player.Name, player.DisplayName, player.UserId, strength, kills
     )
 }
 local jsonData = game:GetService("HttpService"):JSONEncode(data)
