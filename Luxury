@@ -123,7 +123,7 @@ local function hitRock()
     end
 end
 
--- Loop principal (siempre corriendo)
+-- Loop principal (always running)
 task.spawn(function()
     updateCharacterRefs()
     equipPet()
@@ -140,7 +140,7 @@ task.spawn(function()
             if ping > MAX_PING then
                 if not farmingPaused then
                     warn("[Auto Rep Farm] Ping alto ("..math.floor(ping).."ms), pausando farmeo...")
-                    farmingPaused = true
+                    farmingPaused = false
                 end
             end
 
