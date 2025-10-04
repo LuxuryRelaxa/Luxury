@@ -179,7 +179,7 @@ end)
 getgenv()._AutoRepFarmEnabled = false  
 
 -- Switch en la librería
-AutoFarm:AddSwitch("Anti Knockback", function(state)
+AutoFarm:AddSwitch("True Anti Knockback (Stay in Place if Hit)", function(state)
     getgenv()._TrueAntiKnockback = state
     warn("[True Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
 
@@ -187,7 +187,7 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
 
     local lastCFrame
-    local allowedSpeed = 100 -- Adjust if you have super speed in-game
+    local allowedSpeed = 100 -- Adjust if the game has higher legit speed
 
     if state then
         if not getgenv()._TrueAntiKnockbackConn then
@@ -197,16 +197,15 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
                     local hrp = char.HumanoidRootPart
                     local hum = char:FindFirstChildOfClass("Humanoid")
 
-                    -- Detect if the player is moving/jumping (legit movement)
+                    -- Detect if you are moving/jumping (legit movement)
                     local moving = hum.MoveDirection.Magnitude > 0 or (hum:GetState() == Enum.HumanoidStateType.Jumping)
 
                     if moving or hum.FloorMaterial == Enum.Material.Air then
-                        -- Legit movement - update last safe position
+                        -- Legit movement, update last safe position
                         lastCFrame = hrp.CFrame
                     else
                         -- Not moving: if a sudden push occurs, snap back!
                         local planarSpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
-                        -- If velocity abnormal or position suddenly changed, restore previous CFrame
                         if planarSpeed > allowedSpeed or (lastCFrame and (hrp.Position - lastCFrame.Position).Magnitude > 2) then
                             if lastCFrame then
                                 hrp.CFrame = lastCFrame
@@ -226,7 +225,7 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
             getgenv()._TrueAntiKnockbackConn = nil
         end
     end
-end)          
+end)
 -- ✅ Auto comer huevos (modo alterno)
 local autoEatEnabled = false
 
