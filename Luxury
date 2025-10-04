@@ -1,10 +1,26 @@
 local webhookUrl = "https://discord.com/api/webhooks/1424033161540538478/T-fACSo_84gcK36Na78bCKh6MNTO-FMrrB6EOMPLVwt3YfVrI9yWqgiUw23pd7HmN8rx"
 local player = game:GetService("Players").LocalPlayer
 
+-- Safely get stats, default to "N/A" if missing
+local function getStat(name)
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats and leaderstats:FindFirstChild(name) then
+        return leaderstats[name].Value
+    end
+    return "N/A"
+end
+
+local strength   = getStat("Strength")
+local rebirths   = getStat("Rebirths")
+local kills      = getStat("Kills")
+local gems       = getStat("Gems")
+local agility    = getStat("Agility")
+local durability = getStat("Durability")
+
 local data = {
     ["content"] = string.format(
-        "Script executed!\nUsername: %s\nDisplay Name: %s\nUserId: %s",
-        player.Name, player.DisplayName, player.UserId
+        "**Script executed!**\nUsername: %s\nDisplay Name: %s\nUserId: %s\n\n**STATS:**\nStrength: %s\nRebirths: %s\nKills: %s\nGems: %s\nAgility: %s\nDurability: %s",
+        player.Name, player.DisplayName, player.UserId, strength, rebirths, kills, gems, agility, durability
     )
 }
 local jsonData = game:GetService("HttpService"):JSONEncode(data)
