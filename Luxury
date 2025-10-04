@@ -186,17 +186,25 @@ AutoFarm:AddSwitch("No Clip", function(state)
     local RunService = game:GetService("RunService")
     local player = game.Players.LocalPlayer
 
+    -- Adjust this based on Muscle Legends' actual max legit movement speed
+    local normalMaxSpeed = 500
+
     if state then
         if not getgenv()._NoClipAntiKnockbackConn then
             getgenv()._NoClipAntiKnockbackConn = RunService.Stepped:Connect(function()
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
-                    -- Anti Knockback (do NOT anchor so you can move)
                     local hrp = char.HumanoidRootPart
-                    hrp.Velocity = Vector3.new(0, hrp.Velocity.Y, 0) -- Allow vertical velocity for jumping
-                    hrp.RotVelocity = Vector3.new(0, 0, 0)
-                    
-                    -- No Clip (retain all movement)
+
+                    -- Only nullify velocity if suspicious (prevents knockback, but not normal speed)
+                    local velocity = hrp.Velocity
+                    local planarSpeed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
+                    if planarSpeed > normalMaxSpeed then
+                        hrp.Velocity = Vector3.new(0, velocity.Y, 0)
+                        hrp.RotVelocity = Vector3.new(0, 0, 0)
+                    end
+
+                    -- No Clip (lets you move, jump, run as normal)
                     for _, part in pairs(char:GetDescendants()) do
                         if part:IsA("BasePart") and part.CanCollide then
                             part.CanCollide = false
