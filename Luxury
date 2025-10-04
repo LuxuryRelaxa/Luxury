@@ -52,7 +52,7 @@ local AutoFarm = window:AddTab("Auto Farm")
 getgenv()._AutoRepFarmEnabled = false  
 
 -- Switch en la librería
-AutoFarm:AddSwitch("OverClockV1", function(state)
+AutoFarm:AddSwitch("OverClock", function(state)
     getgenv()._AutoRepFarmEnabled = state
     warn("[Auto Rep Farm] Estado cambiado a:", state and "ON" or "OFF")
 end)
@@ -187,8 +187,8 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
     local lastCFrame
     local allowedSpeed = 100 -- Adjust for your game speed
+    local correctionStrength = 0.25 -- 0 = instant, 1 = no correction; lower is snappier, higher is smoother
 
-    -- Handle the BodyVelocity anti-fling part
     local function applyBodyVelocity(enable)
         local char = player.Character or player.CharacterAdded:Wait()
         local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -212,27 +212,25 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
     end
 
     if state then
-        -- Enable BodyVelocity anti-fling
         applyBodyVelocity(true)
-
-        -- Connect true anti-knockback logic
         if not getgenv()._TrueAntiKnockbackConn then
             getgenv()._TrueAntiKnockbackConn = RunService.Stepped:Connect(function()
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
                     local hrp = char.HumanoidRootPart
                     local hum = char:FindFirstChildOfClass("Humanoid")
-
-                    -- legit movement detection
                     local moving = hum.MoveDirection.Magnitude > 0 or (hum:GetState() == Enum.HumanoidStateType.Jumping)
                     if moving or hum.FloorMaterial == Enum.Material.Air then
                         lastCFrame = hrp.CFrame
                     else
                         local planarSpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
-                        if planarSpeed > allowedSpeed or (lastCFrame and (hrp.Position - lastCFrame.Position).Magnitude > 2) then
+                        local distance = lastCFrame and (hrp.Position - lastCFrame.Position).Magnitude or 0
+                        if planarSpeed > allowedSpeed or (lastCFrame and distance > 2) then
                             if lastCFrame then
-                                hrp.CFrame = lastCFrame
-                                hrp.Velocity = Vector3.new(0, 0, 0)
+                                -- Smoothly interpolate to last valid position
+                                hrp.CFrame = hrp.CFrame:Lerp(lastCFrame, correctionStrength)
+                                -- Gradually dampen velocity for smooth stop
+                                hrp.Velocity = hrp.Velocity * 0.2
                                 hrp.RotVelocity = Vector3.new(0, 0, 0)
                             end
                         else
@@ -243,10 +241,7 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
             end)
         end
     else
-        -- Disable BodyVelocity anti-fling
         applyBodyVelocity(false)
-
-        -- Disconnect true anti-knockback logic
         if getgenv()._TrueAntiKnockbackConn then
             getgenv()._TrueAntiKnockbackConn:Disconnect()
             getgenv()._TrueAntiKnockbackConn = nil
