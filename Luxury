@@ -367,7 +367,7 @@ AutoFarm:AddButton("Anti Lag", function()
     end
 
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "anti lag activado",
+        Title = "anti lag activated",
         Text = "Full optimization applied!",
         Duration = 5
     })
