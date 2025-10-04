@@ -179,17 +179,43 @@ end)
 getgenv()._AutoRepFarmEnabled = false  
 
 -- Switch en la librería
-AutoFarm:AddSwitch("True Anti Knockback (Stay in Place if Hit)", function(state)
-    getgenv()._TrueAntiKnockback = state
-    warn("[True Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
+AutoFarm:AddSwitch("Anti Knockback", function(state)
+    getgenv()._AntiKnockback = state
+    warn("[Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
 
     local RunService = game:GetService("RunService")
     local player = game.Players.LocalPlayer
-
     local lastCFrame
-    local allowedSpeed = 100 -- Adjust if the game has higher legit speed
+    local allowedSpeed = 100 -- Adjust for your game speed
+
+    -- Handle the BodyVelocity anti-fling part
+    local function applyBodyVelocity(enable)
+        local char = player.Character or player.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            if enable then
+                if not hrp:FindFirstChild("AntiFlingBV") then
+                    local bv = Instance.new("BodyVelocity")
+                    bv.Name = "AntiFlingBV"
+                    bv.MaxForce = Vector3.new(100000, 0, 100000)
+                    bv.Velocity = Vector3.new(0, 0, 0)
+                    bv.P = 1250
+                    bv.Parent = hrp
+                end
+            else
+                local bv = hrp:FindFirstChild("AntiFlingBV")
+                if bv then
+                    bv:Destroy()
+                end
+            end
+        end
+    end
 
     if state then
+        -- Enable BodyVelocity anti-fling
+        applyBodyVelocity(true)
+
+        -- Connect true anti-knockback logic
         if not getgenv()._TrueAntiKnockbackConn then
             getgenv()._TrueAntiKnockbackConn = RunService.Stepped:Connect(function()
                 local char = player.Character
@@ -197,14 +223,11 @@ AutoFarm:AddSwitch("True Anti Knockback (Stay in Place if Hit)", function(state)
                     local hrp = char.HumanoidRootPart
                     local hum = char:FindFirstChildOfClass("Humanoid")
 
-                    -- Detect if you are moving/jumping (legit movement)
+                    -- legit movement detection
                     local moving = hum.MoveDirection.Magnitude > 0 or (hum:GetState() == Enum.HumanoidStateType.Jumping)
-
                     if moving or hum.FloorMaterial == Enum.Material.Air then
-                        -- Legit movement, update last safe position
                         lastCFrame = hrp.CFrame
                     else
-                        -- Not moving: if a sudden push occurs, snap back!
                         local planarSpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
                         if planarSpeed > allowedSpeed or (lastCFrame and (hrp.Position - lastCFrame.Position).Magnitude > 2) then
                             if lastCFrame then
@@ -220,6 +243,10 @@ AutoFarm:AddSwitch("True Anti Knockback (Stay in Place if Hit)", function(state)
             end)
         end
     else
+        -- Disable BodyVelocity anti-fling
+        applyBodyVelocity(false)
+
+        -- Disconnect true anti-knockback logic
         if getgenv()._TrueAntiKnockbackConn then
             getgenv()._TrueAntiKnockbackConn:Disconnect()
             getgenv()._TrueAntiKnockbackConn = nil
