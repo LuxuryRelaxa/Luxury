@@ -123,50 +123,40 @@ local function hitRock()
     end
 end
 
-local BASE_REP_DELAY = 0.05
-local HIGH_PING_REP_DELAY = 0.5
+    local farmingPaused = false
 
-while true do
-    if getgenv()._AutoRepFarmEnabled then
-        local ping = getPing()
-        local delay = BASE_REP_DELAY
+    while true do
+        if getgenv()._AutoRepFarmEnabled then
+            local ping = getPing()
 
-        if ping > MAX_PING then
-            warn("[Auto Rep Farm] High ping ("..math.floor(ping).."ms), slowing down farm.")
-            delay = HIGH_PING_REP_DELAY
-        elseif ping > MIN_PING then
-            -- Optionally, interpolate between BASE and HIGH_PING delay for smoother scaling
-            delay = BASE_REP_DELAY + ((ping - MIN_PING) / (MAX_PING - MIN_PING)) * (HIGH_PING_REP_DELAY - BASE_REP_DELAY)
-        end
-
-        -- Farming logic here (do NOT skip it, just slow it down)
-        if LocalPlayer:FindFirstChild("muscleEvent") then
-            for i = 1, REPS_PER_CYCLE do
-                LocalPlayer.muscleEvent:FireServer("rep")
-            end
-        end
-        -- ... rest of your farming stuff (eatProteinEgg, hitRock, etc) ...
-
-        task.wait(delay)
-    else
-        task.wait(0.2) -- Or whatever when farming is disabled
-    end
-end
-if tick() - lastProteinEggTime >= PROTEIN_EGG_INTERVAL then
-                    eatProteinEgg()
-                    lastProteinEggTime = tick()
-                end
-
-                if tick() - lastRockTime >= ROCK_INTERVAL then
-                    hitRock()
-                    lastRockTime = tick()
+            -- Pausa si ping alto
+            if ping > MAX_PING then
+                if not farmingPaused then
+                    warn("[Auto Rep Farm] Ping alto ("..math.floor(ping).."ms), pausando farmeo...")
+                    farmingPaused = true
                 end
             end
-        end
+
+            -- Reanuda si ping bajo
+            if ping <= MIN_PING then
+                if farmingPaused then
+                    warn("[Auto Rep Farm] Ping bajo ("..math.floor(ping).."ms), reanudando farmeo...")
+                    farmingPaused = false
+                end
+            end
+
+-- Solo farmea si no está pausado
+            if not farmingPaused then
+                if LocalPlayer:FindFirstChild("muscleEvent") then
+                    for i = 1, REPS_PER_CYCLE do
+                        LocalPlayer.muscleEvent:FireServer("rep")
+                    end
+                end
 
         task.wait(REP_DELAY)
     end
 end)
+
 
 getgenv()._AutoRepFarmEnabled = false  
 
