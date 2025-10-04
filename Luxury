@@ -188,7 +188,7 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
     local lastCFrame
     local allowedSpeed = 500 -- Adjust for your game speed
     local correctionStrength = 0.5 -- Higher for smoother, lower for snappier
-    local velocityDamp = 0.2 -- Closer to 1 = slower stop, closer to 0 = snappier stop
+    local velocityDamp = 0.7 -- Closer to 1 = slower stop, closer to 0 = snappier stop
 
     local function applyBodyVelocity(enable)
         local char = player.Character or player.CharacterAdded:Wait()
