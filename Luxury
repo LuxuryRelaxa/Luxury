@@ -179,27 +179,45 @@ end)
 getgenv()._AutoRepFarmEnabled = false  
 
 -- Switch en la librería
-AutoFarm:AddSwitch("Anti Knockback", function(state)
-    getgenv()._AntiKnockbackEnabled = state
-    warn("[Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
+AutoFarm:AddSwitch("No Clip", function(state)
+    getgenv()._NoClipAntiKnockback = state
+    warn("[No Clip + Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
+
+    local RunService = game:GetService("RunService")
+    local player = game.Players.LocalPlayer
 
     if state then
-        if not getgenv()._AntiKnockbackConnection then
-            getgenv()._AntiKnockbackConnection = game:GetService("RunService").Stepped:Connect(function()
-                local player = game.Players.LocalPlayer
+        if not getgenv()._NoClipAntiKnockbackConn then
+            getgenv()._NoClipAntiKnockbackConn = RunService.Stepped:Connect(function()
                 local char = player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
+                if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
+                    -- Anti Knockback (do NOT anchor so you can move)
                     local hrp = char.HumanoidRootPart
-                    -- Set velocity to zero to prevent knockback
-                    hrp.Velocity = Vector3.new(0, 0, 0)
+                    hrp.Velocity = Vector3.new(0, hrp.Velocity.Y, 0) -- Allow vertical velocity for jumping
                     hrp.RotVelocity = Vector3.new(0, 0, 0)
+                    
+                    -- No Clip (retain all movement)
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
                 end
             end)
         end
     else
-        if getgenv()._AntiKnockbackConnection then
-            getgenv()._AntiKnockbackConnection:Disconnect()
-            getgenv()._AntiKnockbackConnection = nil
+        if getgenv()._NoClipAntiKnockbackConn then
+            getgenv()._NoClipAntiKnockbackConn:Disconnect()
+            getgenv()._NoClipAntiKnockbackConn = nil
+        end
+        -- Restore collisions on all parts when disabling
+        local char = player.Character
+        if char then
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
         end
     end
 end)
