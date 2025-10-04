@@ -180,63 +180,29 @@ getgenv()._AutoRepFarmEnabled = false
 
 -- Switch en la librería
 AutoFarm:AddSwitch("Anti Knockback", function(state)
-    local antiKnockbackSwitch =
-        if bool then
-            local playerName = player.Name
-            local character = game.Workspace:FindFirstChild(playerName)
-            if character then
-                local rootPart = character:FindFirstChild("HumanoidRootPart")
-                if rootPart then
-                    local bodyVelocity = Instance.new("BodyVelocity")
-                    bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
-                    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-                    bodyVelocity.P = 1250
-                    bodyVelocity.Parent = rootPart
+    getgenv()._AntiKnockbackEnabled = state
+    warn("[Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
+
+    if state then
+        if not getgenv()._AntiKnockbackConnection then
+            getgenv()._AntiKnockbackConnection = game:GetService("RunService").Stepped:Connect(function()
+                local player = game.Players.LocalPlayer
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    -- Set velocity to zero to prevent knockback
+                    hrp.Velocity = Vector3.new(0, 0, 0)
+                    hrp.RotVelocity = Vector3.new(0, 0, 0)
                 end
-            end
-        else
-            local playerName = player.Name
-            local character = game.Workspace:FindFirstChild(playerName)
-            if character then
-                local rootPart = character:FindFirstChild("HumanoidRootPart")
-                if rootPart then
-                    local existingVelocity = rootPart:FindFirstChild("BodyVelocity")
-                    if existingVelocity and existingVelocity.MaxForce == Vector3.new(100000, 0, 100000) then
-                        existingVelocity:Destroy()
-                    end
-                end
-            end
+            end)
+        end
+    else
+        if getgenv()._AntiKnockbackConnection then
+            getgenv()._AntiKnockbackConnection:Disconnect()
+            getgenv()._AntiKnockbackConnection = nil
         end
     end
-)
-antiKnockbackSwitch:Set(true)
-
-local lockRunning = false
-local lockSwitch =
-    MainTab:AddSwitch(
-    "Lock Position",
-    function(state)
-        lockRunning = state
-        if lockRunning then
-            local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = char:WaitForChild("HumanoidRootPart")
-            local lockPosition = hrp.Position
-
-            task.spawn(
-                function()
-                    while lockRunning do
-                        if hrp and hrp.Parent then
-                            hrp.Velocity = Vector3.new(0, 0, 0)
-                            hrp.RotVelocity = Vector3.new(0, 0, 0)
-                            hrp.CFrame = CFrame.new(lockPosition)
-                        end
-                        wait(0.05)
-                    end
-                end
-            )
-        end
-    end
-)
+end)
 -- ✅ Auto comer huevos (modo alterno)
 local autoEatEnabled = false
 
