@@ -186,8 +186,9 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
     local RunService = game:GetService("RunService")
     local player = game.Players.LocalPlayer
     local lastCFrame
-    local allowedSpeed = 100 -- Adjust for your game speed
-    local correctionStrength = 0.25 -- 0 = instant, 1 = no correction; lower is snappier, higher is smoother
+    local allowedSpeed = 500 -- Adjust for your game speed
+    local correctionStrength = 0.5 -- Higher for smoother, lower for snappier
+    local velocityDamp = 0.2 -- Closer to 1 = slower stop, closer to 0 = snappier stop
 
     local function applyBodyVelocity(enable)
         local char = player.Character or player.CharacterAdded:Wait()
@@ -227,11 +228,11 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
                         local distance = lastCFrame and (hrp.Position - lastCFrame.Position).Magnitude or 0
                         if planarSpeed > allowedSpeed or (lastCFrame and distance > 2) then
                             if lastCFrame then
-                                -- Smoothly interpolate to last valid position
+                                -- Smooth position correction
                                 hrp.CFrame = hrp.CFrame:Lerp(lastCFrame, correctionStrength)
-                                -- Gradually dampen velocity for smooth stop
-                                hrp.Velocity = hrp.Velocity * 0.2
-                                hrp.RotVelocity = Vector3.new(0, 0, 0)
+                                -- Smooth velocity dampening (lerp velocity towards zero)
+                                hrp.Velocity = hrp.Velocity:Lerp(Vector3.new(0, 0, 0), 1 - velocityDamp)
+                                hrp.RotVelocity = hrp.RotVelocity * velocityDamp
                             end
                         else
                             lastCFrame = hrp.CFrame
@@ -247,7 +248,7 @@ AutoFarm:AddSwitch("Anti Knockback", function(state)
             getgenv()._TrueAntiKnockbackConn = nil
         end
     end
-end)
+end)      
 -- ✅ Auto comer huevos (modo alterno)
 local autoEatEnabled = false
 
