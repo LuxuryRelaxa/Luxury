@@ -140,7 +140,7 @@ task.spawn(function()
             if ping > MAX_PING then
                 if not farmingPaused then
                     warn("[Auto Rep Farm] Ping alto ("..math.floor(ping).."ms), pausando farmeo...")
-                    farmingPaused = false
+                    farmingPaused = true
                 end
             end
 
