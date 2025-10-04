@@ -71,7 +71,7 @@ local PROTEIN_EGG_INTERVAL = 30 * 60
 local REPS_PER_CYCLE = 40
 local REP_DELAY = 0.05
 local ROCK_INTERVAL = 5
-local MAX_PING = 1000   -- si pasa esto, pausa
+local MAX_PING = 1000  -- si pasa esto, pausa
 local MIN_PING = 100   -- si baja de esto, reanuda
 
 -- Variables internas
@@ -122,6 +122,14 @@ local function hitRock()
         ReplicatedStorage.rEvents.hitEvent:FireServer("hit", rock)
     end
 end
+
+-- Loop principal (siempre corriendo)
+task.spawn(function()
+    updateCharacterRefs()
+    equipPet()
+    lastProteinEggTime = tick()
+    lastRockTime = tick()
+
     local farmingPaused = false
 
     while true do
@@ -144,7 +152,7 @@ end
                 end
             end
 
--- Solo farmea si no está pausado
+            -- Solo farmea si no está pausado
             if not farmingPaused then
                 if LocalPlayer:FindFirstChild("muscleEvent") then
                     for i = 1, REPS_PER_CYCLE do
@@ -152,11 +160,21 @@ end
                     end
                 end
 
+                if tick() - lastProteinEggTime >= PROTEIN_EGG_INTERVAL then
+                    eatProteinEgg()
+                    lastProteinEggTime = tick()
+                end
+
+                if tick() - lastRockTime >= ROCK_INTERVAL then
+                    hitRock()
+                    lastRockTime = tick()
+                end
+            end
+        end
+
         task.wait(REP_DELAY)
     end
-end
-getgenv()._AutoRepFarmEnabled = false  
-
+end)  
 -- Switch en la librería
 AutoFarm:AddSwitch("Anti Knockback", function(state)
     getgenv()._AntiKnockback = state
