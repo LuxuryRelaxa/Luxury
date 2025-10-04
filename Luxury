@@ -122,7 +122,6 @@ local function hitRock()
         ReplicatedStorage.rEvents.hitEvent:FireServer("hit", rock)
     end
 end
-
     local farmingPaused = false
 
     while true do
@@ -155,9 +154,7 @@ end
 
         task.wait(REP_DELAY)
     end
-end)
-
-
+end
 getgenv()._AutoRepFarmEnabled = false  
 
 -- Switch en la librería
