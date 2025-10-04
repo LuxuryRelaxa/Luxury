@@ -179,34 +179,55 @@ end)
 getgenv()._AutoRepFarmEnabled = false  
 
 -- Switch en la librería
-AutoFarm:AddSwitch("No Clip", function(state)
-    getgenv()._NoClipAntiKnockback = state
-    warn("[No Clip + Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
+AutoFarm:AddSwitch("No Clip + True Anti Knockback", function(state)
+    getgenv()._NoClipTrueAntiKB = state
+    warn("[No Clip + True Anti Knockback] Estado cambiado a:", state and "ON" or "OFF")
 
     local RunService = game:GetService("RunService")
     local player = game.Players.LocalPlayer
 
-    -- Adjust this based on Muscle Legends' actual max legit movement speed
-    local normalMaxSpeed = 500
+    -- Store last legitimate position and velocity
+    local lastCFrame
+    local lastVelocity
+
+    -- You can tweak this to fit your game's max legit movement speed
+    local allowedSpeed = 80
 
     if state then
-        if not getgenv()._NoClipAntiKnockbackConn then
-            getgenv()._NoClipAntiKnockbackConn = RunService.Stepped:Connect(function()
+        if not getgenv()._NoClipTrueAntiKBConn then
+            getgenv()._NoClipTrueAntiKBConn = RunService.Stepped:Connect(function()
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
                     local hrp = char.HumanoidRootPart
+                    local hum = char:FindFirstChildOfClass("Humanoid")
 
-                    -- Only nullify velocity if suspicious (prevents knockback, but not normal speed)
-                    local velocity = hrp.Velocity
-                    local planarSpeed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
-                    if planarSpeed > normalMaxSpeed then
-                        hrp.Velocity = Vector3.new(0, velocity.Y, 0)
-                        hrp.RotVelocity = Vector3.new(0, 0, 0)
+                    -- Let player move/jump/run as normal
+                    local moving = hum.MoveDirection.Magnitude > 0 or (hum:GetState() == Enum.HumanoidStateType.Jumping)
+
+                    if moving or hum.FloorMaterial == Enum.Material.Air then
+                        -- Legitimate movement: update last safe position
+                        lastCFrame = hrp.CFrame
+                        lastVelocity = hrp.Velocity
+                    else
+                        -- Not moving: if abnormal change, revert!
+                        local planarSpeed = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude
+                        if planarSpeed > allowedSpeed or (lastCFrame and (hrp.Position - lastCFrame.Position).Magnitude > 2) then
+                            -- Detected external knockback/attack: force back to last position, stop velocity
+                            if lastCFrame then
+                                hrp.CFrame = lastCFrame
+                                hrp.Velocity = Vector3.new(0, 0, 0)
+                                hrp.RotVelocity = Vector3.new(0, 0, 0)
+                            end
+                        else
+                            -- Still safe, update last position
+                            lastCFrame = hrp.CFrame
+                            lastVelocity = hrp.Velocity
+                        end
                     end
 
-                    -- No Clip (lets you move, jump, run as normal)
+                    -- No Clip: always off collisions
                     for _, part in pairs(char:GetDescendants()) do
-                        if part:IsA("BasePart") and part.CanCollide then
+                        if part:IsA("BasePart") then
                             part.CanCollide = false
                         end
                     end
@@ -214,11 +235,11 @@ AutoFarm:AddSwitch("No Clip", function(state)
             end)
         end
     else
-        if getgenv()._NoClipAntiKnockbackConn then
-            getgenv()._NoClipAntiKnockbackConn:Disconnect()
-            getgenv()._NoClipAntiKnockbackConn = nil
+        if getgenv()._NoClipTrueAntiKBConn then
+            getgenv()._NoClipTrueAntiKBConn:Disconnect()
+            getgenv()._NoClipTrueAntiKBConn = nil
         end
-        -- Restore collisions on all parts when disabling
+        -- Restore collisions on all parts
         local char = player.Character
         if char then
             for _, part in pairs(char:GetDescendants()) do
