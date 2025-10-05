@@ -1053,8 +1053,8 @@ end
 
 local function updateAdvancedStats(targetPlayer)
     if not targetPlayer then
-        enemyHealthLabel.Text = "vida del enemigo: N/A"
-        playerDamageLabel.Text = "Tu daño: N/A"
+        enemyHealthLabel.Text = "Health: N/A"
+        playerDamageLabel.Text = "Damage: N/A"
         hitsToKillLabel.Text = "Hits to Kill: N/A"
         return
     end
@@ -1809,7 +1809,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 -- 📌 Botón para dejar de seguir
-Killer:AddButton("Dejar de Seguir", function()
+Killer:AddButton("Stop Player TP", function()
     following = false
     followTarget = nil
     print("⛔ Stopped following")
@@ -3262,7 +3262,7 @@ Killer:AddButton("Size NaN", function()
     local args = {"changeSize", 0/0}
     game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("changeSpeedSizeRemote"):InvokeServer(unpack(args))
 end)
-Killer:AddButton("activate dead hit", function()
+Killer:AddButton("activate NaN Kill", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/DsQKiTnC"))()
 end)
 
@@ -3476,7 +3476,7 @@ teleport:AddButton("Brawl Desert", function()
     })
 end)
 
-teleport:AddButton("Brawl Regular", function()
+teleport:AddButton("Brawl Ring", function()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -3498,7 +3498,7 @@ local resultadoLabelsDamage = {}
 
 local FolderDamage = Calculadora:AddFolder("Pack Damage Calculator")
 
-FolderDamage:AddTextBox("Base Strongth (ej: 1.27Qa, T, B)", function(text)
+FolderDamage:AddTextBox("Base Strength (ej: 1.27Qa, T, B)", function(text)
     local unidades = { ["T"] = 1e12, ["Q"] = 1e15, ["B"] = 1e9 }
     text = text:upper()
     for u, m in pairs(unidades) do
@@ -4426,7 +4426,7 @@ Gift:AddTextBox("Tropical Shakes gift", function(text)
     shakeCount = tonumber(text) or 0
 end)
 
-Gift:AddButton("Gift Tropical Shakes", function()
+Gift:AddButton("Gift Shakes", function()
     if selectedShakePlayer and shakeCount > 0 then
         for i = 1, shakeCount do
             local shake = Players.LocalPlayer.consumablesFolder:FindFirstChild("Tropical Shake")
